@@ -10,7 +10,7 @@
 
 # /***************************************************************************
 # Copyright (c) 2019-2020, Saif Sidhik
- 
+
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -35,11 +35,13 @@ import rospy
 import socket
 from franka_core_msgs.msg import JointLimits
 
+
 def _log_networking_error():
     print ("Failed to connect to the ROS parameter server!\n"
            "Please check to make sure your ROS networking is "
            "properly configured:\n")
     sys.exit()
+
 
 class RobotParams(object):
     """
@@ -52,9 +54,9 @@ class RobotParams(object):
             self._in_sim = True
             self._ns = "/panda_simulator"
             rospy.loginfo("Robot control running in Simulation Mode!")
-            self._robot_ip="sim"
+            self._robot_ip = "sim"
         else:
-            self._ns = "/franka_ros_interface" 
+            self._ns = "/franka_ros_interface"
             self._in_sim = False
             self._robot_ip = self.get_robot_ip()
 
@@ -91,7 +93,6 @@ class RobotParams(object):
             _log_networking_error()
 
         return neutral_pose
-
 
     def get_robot_ip(self):
         robot_ip = None
@@ -215,7 +216,6 @@ class RobotParams(object):
         except (socket.error, socket.gaierror):
             _log_networking_error()
 
-
         for i in range(len(lims.joint_names)):
             lims.position_upper.append(pos_max_lim[lims.joint_names[i]])
             lims.position_lower.append(pos_min_lim[lims.joint_names[i]])
@@ -226,13 +226,9 @@ class RobotParams(object):
         return lims
 
 
-
 if __name__ == '__main__':
-    
     rp = RobotParams()
     # print rp.__dict__
     print rp.get_robot_ip()
     print rp.get_robot_name()
     print rp.get_joint_names()
-
-
