@@ -36,142 +36,171 @@
 
 namespace franka_ros_controllers {
 
-bool VelocityJointVelocityController::init(hardware_interface::RobotHW* robot_hardware,
-                                          ros::NodeHandle& node_handle) {
+  bool VelocityJointVelocityController::init(hardware_interface::RobotHW* robot_hardware,
+                                             ros::NodeHandle& node_handle) {
 
-  desired_joints_subscriber_ = node_handle.subscribe(
-      "/franka_ros_interface/motion_controller/arm/joint_commands", 20, &VelocityJointVelocityController::jointVelCmdCallback, this,
-      ros::TransportHints().reliable().tcpNoDelay());
+    desired_joints_subscriber_ = node_handle.subscribe(
+        "franka_ros_interface/motion_controller/arm/joint_commands", 20, &VelocityJointVelocityController::jointVelCmdCallback, this,
+        ros::TransportHints().reliable().tcpNoDelay());
 
-  velocity_joint_interface_ = robot_hardware->get<hardware_interface::VelocityJointInterface>();
-  if (velocity_joint_interface_ == nullptr) {
-    ROS_ERROR(
-        "VelocityJointVelocityController: Error getting velocity joint interface from hardware!");
-    return false;
-  }
-  if (!node_handle.getParam("/robot_config/joint_names", joint_limits_.joint_names)) {
-    ROS_ERROR("VelocityJointVelocityController: Could not parse joint names");
-  }
-  if (joint_limits_.joint_names.size() != 7) {
-    ROS_ERROR_STREAM("VelocityJointVelocityController: Wrong number of joint names, got "
-                     << joint_limits_.joint_names.size() << " instead of 7 names!");
-    return false;
-  }
-  std::map<std::string, double> vel_limit_map;
-  if (!node_handle.getParam("/robot_config/joint_config/joint_velocity_limit", vel_limit_map) ) {
-  ROS_ERROR(
-      "VelocityJointVelocityController: Joint limits parameters not provided, aborting "
-      "controller init!");
-  return false;
-      }
-  
-
-  for (size_t i = 0; i < joint_limits_.joint_names.size(); ++i){
-    if (vel_limit_map.find(joint_limits_.joint_names[i]) != vel_limit_map.end())
-      {
-        joint_limits_.velocity.push_back(vel_limit_map[joint_limits_.joint_names[i]]);
-      }
-      else
-      {
-        ROS_ERROR("VelocityJointVelocityController: Unable to find lower velocity limit values for joint %s...",
-                       joint_limits_.joint_names[i].c_str());
-      }
-  }  
-
-  velocity_joint_handles_.resize(7);
-  for (size_t i = 0; i < 7; ++i) {
-    try {
-      velocity_joint_handles_[i] = velocity_joint_interface_->getHandle(joint_limits_.joint_names[i]);
-    } catch (const hardware_interface::HardwareInterfaceException& e) {
-      ROS_ERROR_STREAM(
-          "VelocityJointVelocityController: Exception getting joint handles: " << e.what());
+    velocity_joint_interface_ = robot_hardware->get<hardware_interface::VelocityJointInterface>();
+    if (velocity_joint_interface_ == nullptr) {
+      ROS_ERROR(
+          "VelocityJointVelocityController: Error getting velocity joint interface from hardware!");
       return false;
     }
+
+    /// Check which arm is using the controller (also support using a single arm)
+    // FIXME For now, we hardcoded the ns prefix to be: panda_left, panda_right
+    const std::string& prefix = node_handle.getNamespace();
+    int is_left = -1;
+    if (prefix.find("left") != std::string::npos) {
+      ROS_INFO("VelocityJointVelocityController: Initializing the left arm");
+      is_left = 1;
+    } else if (prefix.find("right") != std::string::npos) {
+      ROS_INFO("VelocityJointVelocityController: Initializing the right arm");
+      is_left = 0;
+    } else {
+      ROS_INFO("VelocityJointVelocityController: Initializing the default arm");
+    }
+
+    if (!node_handle.getParam("/robot_config/joint_names", joint_limits_.joint_names)) {
+
+      if (is_left == 1) {
+        if (!node_handle.getParam("/panda_left/robot_config/joint_names", joint_limits_.joint_names)) {
+          ROS_ERROR("VelocityJointVelocityController: Left arm got no names");
+          return false;
+        }
+      } else if (is_left == 0) {
+        if(!node_handle.getParam("/panda_right/robot_config/joint_names", joint_limits_.joint_names)) {
+          ROS_ERROR("VelocityJointVelocityController: Right arm got no names");
+          return false;
+        }
+      } else {
+        ROS_ERROR_STREAM(
+            "VelocityJointVelocityController: Cannot get joint names from default or left/right robot config");
+        return false;
+      }
+    }
+    if (joint_limits_.joint_names.size() != 7) {
+      ROS_ERROR_STREAM("VelocityJointVelocityController: Wrong number of joint names, got "
+                           << joint_limits_.joint_names.size() << " instead of 7 names!");
+      return false;
+    }
+    std::map<std::string, double> vel_limit_map;
+    if (!node_handle.getParam("/robot_config/joint_config/joint_velocity_limit", vel_limit_map) ) {
+      if (is_left == 1) {
+        if (!node_handle.getParam("/panda_left/robot_config/joint_config/joint_velocity_limit", vel_limit_map)) {
+          ROS_ERROR("VelocityJointVelocityController: Cannot get left arm joint velocity limit");
+          return false;
+        }
+      } else if (is_left == 0) {
+        if (!node_handle.getParam("/panda_right/robot_config/joint_config/joint_velocity_limit", vel_limit_map)) {
+          ROS_ERROR("VelocityJointVelocityController: Cannot get right arm joint velocity limit");
+          return false;
+        }
+      } else {
+        ROS_ERROR(
+            "VelocityJointVelocityController: Cannot get joint velocity limit from default or left/right robot config");
+        return false;
+      }
+    }
+
+    for (size_t i = 0; i < joint_limits_.joint_names.size(); ++i){
+      if (vel_limit_map.find(joint_limits_.joint_names[i]) != vel_limit_map.end()) {
+        joint_limits_.velocity.push_back(vel_limit_map[joint_limits_.joint_names[i]]);
+      } else {
+        ROS_ERROR("VelocityJointVelocityController: Unable to find lower velocity limit values for joint %s...",
+                  joint_limits_.joint_names[i].c_str());
+      }
+    }
+
+    velocity_joint_handles_.resize(7);
+    for (size_t i = 0; i < 7; ++i) {
+      try {
+        velocity_joint_handles_[i] = velocity_joint_interface_->getHandle(joint_limits_.joint_names[i]);
+      } catch (const hardware_interface::HardwareInterfaceException& e) {
+        ROS_ERROR_STREAM(
+            "VelocityJointVelocityController: Exception getting joint handles: " << e.what());
+        return false;
+      }
+    }
+
+    double controller_state_publish_rate(30.0);
+    if (!node_handle.getParam("controller_state_publish_rate", controller_state_publish_rate)) {
+      ROS_INFO_STREAM("VelocityJointVelocityController: Did not find controller_state_publish_rate. Using default "
+                          << controller_state_publish_rate << " [Hz].");
+    }
+    trigger_publish_ = franka_hw::TriggerRate(controller_state_publish_rate);
+
+    dynamic_reconfigure_joint_controller_params_node_ =
+        ros::NodeHandle("franka_ros_interface/velocity_joint_velocity_controller/arm/controller_parameters_config");
+
+    dynamic_server_joint_controller_params_ = std::make_unique<
+        dynamic_reconfigure::Server<franka_ros_controllers::joint_controller_paramsConfig>>(
+        dynamic_reconfigure_joint_controller_params_node_);
+
+    dynamic_server_joint_controller_params_->setCallback(
+        boost::bind(&VelocityJointVelocityController::jointControllerParamCallback, this, _1, _2));
+
+    publisher_controller_states_.init(node_handle, "franka_ros_interface/motion_controller/arm/joint_controller_states", 1);
+
+    {
+      std::lock_guard<realtime_tools::RealtimePublisher<franka_core_msgs::JointControllerStates> > lock(
+          publisher_controller_states_);
+      publisher_controller_states_.msg_.controller_name = "velocity_joint_velocity_controller";
+      publisher_controller_states_.msg_.names.resize(joint_limits_.joint_names.size());
+      publisher_controller_states_.msg_.joint_controller_states.resize(joint_limits_.joint_names.size());
+    }
+    return true;
   }
 
-  double controller_state_publish_rate(30.0);
-  if (!node_handle.getParam("controller_state_publish_rate", controller_state_publish_rate)) {
-    ROS_INFO_STREAM("VelocityJointVelocityController: Did not find controller_state_publish_rate. Using default "
-                    << controller_state_publish_rate << " [Hz].");
+  void VelocityJointVelocityController::starting(const ros::Time& /* time */) {
+    for (size_t i = 0; i < 7; ++i) {
+      initial_vel_[i] = velocity_joint_handles_[i].getVelocity();
+    }
+    vel_d_ = initial_vel_;
+    prev_d_ = vel_d_;
   }
-  trigger_publish_ = franka_hw::TriggerRate(controller_state_publish_rate);
 
-  dynamic_reconfigure_joint_controller_params_node_ =
-      ros::NodeHandle("/franka_ros_interface/velocity_joint_velocity_controller/arm/controller_parameters_config");
+  void VelocityJointVelocityController::update(const ros::Time& time,
+                                               const ros::Duration& period) {
+    for (size_t i = 0; i < 7; ++i) {
+      velocity_joint_handles_[i].setCommand(vel_d_[i]);
+    }
+    double filter_val = filter_joint_vel_ * filter_factor_;
+    for (size_t i = 0; i < 7; ++i) {
+      prev_d_[i] = velocity_joint_handles_[i].getVelocity();
+      vel_d_[i] = filter_val * vel_d_target_[i] + (1.0 - filter_val) * vel_d_[i];
+    }
 
-  dynamic_server_joint_controller_params_ = std::make_unique<
-      dynamic_reconfigure::Server<franka_ros_controllers::joint_controller_paramsConfig>>(
-      dynamic_reconfigure_joint_controller_params_node_);
+    if (trigger_publish_() && publisher_controller_states_.trylock()) {
+      for (size_t i = 0; i < 7; ++i) {
+        publisher_controller_states_.msg_.joint_controller_states[i].set_point = vel_d_target_[i];
+        publisher_controller_states_.msg_.joint_controller_states[i].process_value = vel_d_[i];
+        publisher_controller_states_.msg_.joint_controller_states[i].time_step = period.toSec();
+        publisher_controller_states_.msg_.joint_controller_states[i].header.stamp = time;
+      }
+      publisher_controller_states_.unlockAndPublish();
+    }
 
-  dynamic_server_joint_controller_params_->setCallback(
-      boost::bind(&VelocityJointVelocityController::jointControllerParamCallback, this, _1, _2));
+    // update parameters changed online either through dynamic reconfigure or through the interactive
+    // target by filtering
+    filter_joint_vel_ = param_change_filter_ * target_filter_joint_vel_ + (1.0 - param_change_filter_) * filter_joint_vel_;
+  }
 
-  publisher_controller_states_.init(node_handle, "/franka_ros_interface/motion_controller/arm/joint_controller_states", 1);
-
+  bool VelocityJointVelocityController::checkVelocityLimits(std::vector<double> velocities)
   {
-    std::lock_guard<realtime_tools::RealtimePublisher<franka_core_msgs::JointControllerStates> > lock(
-        publisher_controller_states_);
-    publisher_controller_states_.msg_.controller_name = "velocity_joint_velocity_controller";
-    publisher_controller_states_.msg_.names.resize(joint_limits_.joint_names.size());
-    publisher_controller_states_.msg_.joint_controller_states.resize(joint_limits_.joint_names.size());
-
-  }
-
-  return true;
-}
-
-void VelocityJointVelocityController::starting(const ros::Time& /* time */) {
-  for (size_t i = 0; i < 7; ++i) {
-    initial_vel_[i] = velocity_joint_handles_[i].getVelocity();
-  }
-  vel_d_ = initial_vel_;
-  prev_d_ = vel_d_;
-}
-
-void VelocityJointVelocityController::update(const ros::Time& time,
-                                            const ros::Duration& period) {
-  for (size_t i = 0; i < 7; ++i) {
-    velocity_joint_handles_[i].setCommand(vel_d_[i]);
-  }
-  double filter_val = filter_joint_vel_ * filter_factor_;
-  for (size_t i = 0; i < 7; ++i) {
-    prev_d_[i] = velocity_joint_handles_[i].getVelocity();
-    vel_d_[i] = filter_val * vel_d_target_[i] + (1.0 - filter_val) * vel_d_[i];
-  }
-
-  if (trigger_publish_() && publisher_controller_states_.trylock()) {
-    for (size_t i = 0; i < 7; ++i){
-
-      publisher_controller_states_.msg_.joint_controller_states[i].set_point = vel_d_target_[i];
-      publisher_controller_states_.msg_.joint_controller_states[i].process_value = vel_d_[i];
-      publisher_controller_states_.msg_.joint_controller_states[i].time_step = period.toSec();
-
-      publisher_controller_states_.msg_.joint_controller_states[i].header.stamp = time;
-
+    // bool retval = true;
+    for (size_t i = 0;  i < 7; ++i){
+      if (abs(velocities[i]) > joint_limits_.velocity[i]){
+        return true;
+      }
     }
-
-    publisher_controller_states_.unlockAndPublish();        
+    return false;
   }
 
-  // update parameters changed online either through dynamic reconfigure or through the interactive
-  // target by filtering
-  filter_joint_vel_ = param_change_filter_ * target_filter_joint_vel_ + (1.0 - param_change_filter_) * filter_joint_vel_;
-
-}
-
-bool VelocityJointVelocityController::checkVelocityLimits(std::vector<double> velocities)
-{
-  // bool retval = true;
-  for (size_t i = 0;  i < 7; ++i){
-    if (!(abs(velocities[i]) <= joint_limits_.velocity[i])){
-      return true;
-    }
-  }
-
-  return false;
-}
-
-void VelocityJointVelocityController::jointVelCmdCallback(const franka_core_msgs::JointCommandConstPtr& msg) {
+  void VelocityJointVelocityController::jointVelCmdCallback(const franka_core_msgs::JointCommandConstPtr& msg) {
 
     if (msg->mode == franka_core_msgs::JointCommand::VELOCITY_MODE){
       if (msg->velocity.size() != 7) {
@@ -179,33 +208,28 @@ void VelocityJointVelocityController::jointVelCmdCallback(const franka_core_msgs
             "VelocityJointVelocityController: Published Commands are not of size 7");
         vel_d_ = prev_d_;
         vel_d_target_ = prev_d_;
-      }
-      else if (checkVelocityLimits(msg->velocity)) {
-         ROS_ERROR_STREAM(
+      } else if (checkVelocityLimits(msg->velocity)) {
+        ROS_ERROR_STREAM(
             "VelocityJointVelocityController: Commanded velocities are beyond allowed velocity limits.");
         vel_d_ = prev_d_;
         vel_d_target_ = prev_d_;
-
-      }
-      else
-      {
+      } else {
         std::copy_n(msg->velocity.begin(), 7, vel_d_target_.begin());
       }
-      
     }
     // else ROS_ERROR_STREAM("VelocityJointVelocityController: Published Command msg are not of JointCommand::Velocity! Dropping message");
-}
+  }
 
-void VelocityJointVelocityController::jointControllerParamCallback(franka_ros_controllers::joint_controller_paramsConfig& config,
-                               uint32_t level){
-  target_filter_joint_vel_ = config.velocity_joint_delta_filter;
-}
+  void VelocityJointVelocityController::jointControllerParamCallback(franka_ros_controllers::joint_controller_paramsConfig& config,
+                                                                     uint32_t level){
+    target_filter_joint_vel_ = config.velocity_joint_delta_filter;
+  }
 
-void VelocityJointVelocityController::stopping(const ros::Time& /*time*/) {
-  // WARNING: DO NOT SEND ZERO VELOCITIES HERE AS IN CASE OF ABORTING DURING MOTION
-  // A JUMP TO ZERO WILL BE COMMANDED PUTTING HIGH LOADS ON THE ROBOT. LET THE DEFAULT
-  // BUILT-IN STOPPING BEHAVIOR SLOW DOWN THE ROBOT.
-}
+  void VelocityJointVelocityController::stopping(const ros::Time& /*time*/) {
+    // WARNING: DO NOT SEND ZERO VELOCITIES HERE AS IN CASE OF ABORTING DURING MOTION
+    // A JUMP TO ZERO WILL BE COMMANDED PUTTING HIGH LOADS ON THE ROBOT. LET THE DEFAULT
+    // BUILT-IN STOPPING BEHAVIOR SLOW DOWN THE ROBOT.
+  }
 
 }  // namespace franka_ros_controllers
 

@@ -1,0 +1,19 @@
+controller_list:
+  - name: fake_panda_arm_controller
+    joints:
+      - panda_right_joint1
+      - panda_right_joint2
+      - panda_right_joint3
+      - panda_right_joint4
+      - panda_right_joint5
+      - panda_right_joint6
+      - panda_right_joint7
+  - name: fake_hand_controller
+    joints:
+      - panda_right_finger_joint1
+      - panda_right_finger_joint2
+initial:
+  - group: panda_right_arm
+    pose: ready
+  - group: hand
+    pose: open

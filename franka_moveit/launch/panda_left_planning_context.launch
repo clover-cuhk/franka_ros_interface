@@ -1,0 +1,21 @@
+<launch>
+  <arg name="load_gripper" default="false" />
+
+  <!-- The name of the parameter under which the URDF is loaded -->
+  <arg name="robot_description" default="robot_description"/>
+
+  <!-- The semantic description that corresponds to the URDF -->
+  <param name="$(arg robot_description)_semantic" command="$(find xacro)/xacro '$(find franka_moveit)/config/panda_left_arm_hand.srdf.xacro'" if="$(arg load_gripper)" />
+  <param name="$(arg robot_description)_semantic" command="$(find xacro)/xacro '$(find franka_moveit)/config/panda_left_arm.srdf.xacro'" unless="$(arg load_gripper)" />
+
+  <!-- Load updated joint limits (override information from URDF) -->
+  <group ns="$(arg robot_description)_planning">
+    <rosparam command="load" file="$(find franka_moveit)/config/panda_left_joint_limits.yaml"/>
+  </group>
+
+  <!-- Load default settings for kinematics; these settings are overridden by settings in a node's namespace -->
+  <group ns="$(arg robot_description)_kinematics">
+    <rosparam command="load" file="$(find franka_moveit)/config/panda_left_kinematics.yaml"/>
+  </group>
+
+</launch>

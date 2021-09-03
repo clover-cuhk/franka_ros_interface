@@ -1,0 +1,13 @@
+ controller_list:
+  - name: position_joint_trajectory_controller
+    action_ns: follow_joint_trajectory
+    type: FollowJointTrajectory
+    default: true
+    joints:
+      - panda_right_joint1
+      - panda_right_joint2
+      - panda_right_joint3
+      - panda_right_joint4
+      - panda_right_joint5
+      - panda_right_joint6
+      - panda_right_joint7
