@@ -65,7 +65,6 @@ namespace franka_ros_controllers {
     }
 
     if (!node_handle.getParam("/robot_config/joint_names", joint_limits_.joint_names)) {
-
       if (is_left == 1) {
         if (!node_handle.getParam("/panda_left/robot_config/joint_names", joint_limits_.joint_names)) {
           ROS_ERROR("VelocityJointVelocityController: Left arm got no names");
