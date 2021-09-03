@@ -10,8 +10,8 @@
   <group ns="panda_left">
     <rosparam command="load" file="$(find franka_ros_controllers)/config/ros_left_arm_controllers.yaml" ns="franka_ros_interface"/>
     <!-- Panda Control Interface -->
-    <param name="robot_description" command="$(find xacro)/xacro --inorder '$(find franka_panda_description)/robots/panda_left_arm_hand.urdf.xacro'" if="$(arg load_gripper)" />
-    <param name="robot_description" command="$(find xacro)/xacro --inorder '$(find franka_panda_description)/robots/panda_left_arm.urdf.xacro'" unless="$(arg load_gripper)" />
+    <param name="robot_description" command="$(find xacro)/xacro '$(find franka_panda_description)/robots/panda_left_arm_hand.urdf.xacro'" if="$(arg load_gripper)" />
+    <param name="robot_description" command="$(find xacro)/xacro '$(find franka_panda_description)/robots/panda_left_arm.urdf.xacro'" unless="$(arg load_gripper)" />
 
     <include file="$(find franka_gripper)/launch/franka_gripper.launch" if="$(arg load_gripper)">
       <arg name="robot_ip" value="$(env FRANKA_ROBOT_IP_L)" />
@@ -78,8 +78,8 @@
   <group ns="panda_right">
     <rosparam command="load" file="$(find franka_ros_controllers)/config/ros_right_arm_controllers.yaml" ns="franka_ros_interface"/>
     <!-- Panda Control Interface -->
-    <param name="robot_description" command="$(find xacro)/xacro --inorder '$(find franka_panda_description)/robots/panda_right_arm_hand.urdf.xacro'" if="$(arg load_gripper)" />
-    <param name="robot_description" command="$(find xacro)/xacro --inorder '$(find franka_panda_description)/robots/panda_right_arm.urdf.xacro'" unless="$(arg load_gripper)" />
+    <param name="robot_description" command="$(find xacro)/xacro '$(find franka_panda_description)/robots/panda_right_arm_hand.urdf.xacro'" if="$(arg load_gripper)" />
+    <param name="robot_description" command="$(find xacro)/xacro '$(find franka_panda_description)/robots/panda_right_arm.urdf.xacro'" unless="$(arg load_gripper)" />
 
     <include file="$(find franka_gripper)/launch/franka_gripper.launch" if="$(arg load_gripper)">
       <arg name="robot_ip" value="$(env FRANKA_ROBOT_IP_R)" />

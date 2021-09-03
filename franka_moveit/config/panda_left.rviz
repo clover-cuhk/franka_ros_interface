@@ -81,6 +81,10 @@ Visualization Manager:
           Expand Link Details: false
           Expand Tree: false
           Link Tree Style: Links in Alphabetic Order
+          base:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
           panda_left_link0:
             Alpha: 1
             Show Axes: false
@@ -122,10 +126,6 @@ Visualization Manager:
             Show Trail: false
             Value: true
           panda_left_link8:
-            Alpha: 1
-            Show Axes: false
-            Show Trail: false
-          world:
             Alpha: 1
             Show Axes: false
             Show Trail: false
@@ -174,6 +174,10 @@ Visualization Manager:
           Expand Link Details: false
           Expand Tree: false
           Link Tree Style: Links in Alphabetic Order
+          base:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
           panda_left_link0:
             Alpha: 1
             Show Axes: false
@@ -218,15 +222,98 @@ Visualization Manager:
             Alpha: 1
             Show Axes: false
             Show Trail: false
-          world:
-            Alpha: 1
-            Show Axes: false
-            Show Trail: false
         Robot Alpha: 1
         Show Robot Collision: false
         Show Robot Visual: true
       Value: true
       Velocity_Scaling_Factor: 0.5
+    - Class: rviz/TF
+      Enabled: true
+      Frame Timeout: 15
+      Frames:
+        All Enabled: true
+        base:
+          Value: true
+        panda_left_EE:
+          Value: true
+        panda_left_K:
+          Value: true
+        panda_left_link0:
+          Value: true
+        panda_left_link1:
+          Value: true
+        panda_left_link2:
+          Value: true
+        panda_left_link3:
+          Value: true
+        panda_left_link4:
+          Value: true
+        panda_left_link5:
+          Value: true
+        panda_left_link6:
+          Value: true
+        panda_left_link7:
+          Value: true
+        panda_left_link8:
+          Value: true
+        panda_right_EE:
+          Value: true
+        panda_right_K:
+          Value: true
+        panda_right_link0:
+          Value: true
+        panda_right_link1:
+          Value: true
+        panda_right_link2:
+          Value: true
+        panda_right_link3:
+          Value: true
+        panda_right_link4:
+          Value: true
+        panda_right_link5:
+          Value: true
+        panda_right_link6:
+          Value: true
+        panda_right_link7:
+          Value: true
+        panda_right_link8:
+          Value: true
+        world:
+          Value: true
+      Marker Scale: 0.5
+      Name: TF
+      Show Arrows: true
+      Show Axes: true
+      Show Names: false
+      Tree:
+        world:
+          base:
+            panda_left_link0:
+              panda_left_link1:
+                panda_left_link2:
+                  panda_left_link3:
+                    panda_left_link4:
+                      panda_left_link5:
+                        panda_left_link6:
+                          panda_left_link7:
+                            panda_left_link8:
+                              panda_left_EE:
+                                panda_left_K:
+                                  {}
+            panda_right_link0:
+              panda_right_link1:
+                panda_right_link2:
+                  panda_right_link3:
+                    panda_right_link4:
+                      panda_right_link5:
+                        panda_right_link6:
+                          panda_right_link7:
+                            panda_right_link8:
+                              panda_right_EE:
+                                panda_right_K:
+                                  {}
+      Update Interval: 0
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -244,7 +331,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/XYOrbit
-      Distance: 2.6682090759277344
+      Distance: 3.7486417293548584
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -259,10 +346,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.4147968590259552
+      Pitch: 0.6397968530654907
       Target Frame: panda_link0
       Value: XYOrbit (rviz)
-      Yaw: 1.3367695808410645
+      Yaw: 5.754952907562256
     Saved: ~
 Window Geometry:
   Displays:
@@ -276,11 +363,11 @@ Window Geometry:
     collapsed: false
   LeftArmMotionPlanning - Trajectory Slider:
     collapsed: false
-  QMainWindow State: 000000ff00000000fd0000000100000000000003a3000006c5fc020000000efb000000100044006900730070006c006100790073010000006e000002d30000018200fffffffb0000000800480065006c00700000000342000000bb000000d400fffffffb0000000a00560069006500770073000000026d000000b50000013200fffffffb0000000c00430061006d00650072006100000002ff000001610000000000000000fb0000001e004d006f00740069006f006e00200050006c0061006e006e0069006e00670100000374000001890000000000000000fb0000002e004d006f00740069006f006e0050006c0061006e006e0069006e00670020002d00200053006c00690064006500720000000000ffffffff0000000000000000fb0000002a004c00650066007400410072006d004d006f00740069006f006e0050006c0061006e006e0069006e0067010000034d000003e6000002c900fffffffb00000024005200760069007a00560069007300750061006c0054006f006f006c007300470075006900000004bd0000008d0000007a00fffffffb000000120020002d00200053006c00690064006500720000000000ffffffff0000000000000000fb0000001c004d006f00740069006f006e0050006c0061006e006e0069006e0067010000034f000001fb0000000000000000fb000000280020002d0020005400720061006a006500630074006f0072007900200053006c00690064006500720000000000ffffffff0000000000000000fb0000001c004d006f00740069006f006e0050006c0061006e006e0069006e00670100000308000001760000000000000000fb00000044004d006f00740069006f006e0050006c0061006e006e0069006e00670020002d0020005400720061006a006500630074006f0072007900200053006c00690064006500720000000000ffffffff0000000000000000fb00000052004c00650066007400410072006d004d006f00740069006f006e0050006c0061006e006e0069006e00670020002d0020005400720061006a006500630074006f0072007900200053006c00690064006500720000000000ffffffff00000026000000260000024e000006c500000001000000020000000100000002fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd000000010000000000000425000006c5fc020000000efb000000100044006900730070006c006100790073010000006e000002d30000018200fffffffb0000000800480065006c00700000000342000000bb000000d400fffffffb0000000a00560069006500770073000000026d000000b50000013200fffffffb0000000c00430061006d00650072006100000002ff000001610000000000000000fb0000001e004d006f00740069006f006e00200050006c0061006e006e0069006e00670100000374000001890000000000000000fb0000002e004d006f00740069006f006e0050006c0061006e006e0069006e00670020002d00200053006c00690064006500720000000000ffffffff0000000000000000fb0000002a004c00650066007400410072006d004d006f00740069006f006e0050006c0061006e006e0069006e0067010000034d000003e6000002b800fffffffb00000024005200760069007a00560069007300750061006c0054006f006f006c007300470075006900000004bd0000008d0000007a00fffffffb000000120020002d00200053006c00690064006500720000000000ffffffff0000000000000000fb0000001c004d006f00740069006f006e0050006c0061006e006e0069006e0067010000034f000001fb0000000000000000fb000000280020002d0020005400720061006a006500630074006f0072007900200053006c00690064006500720000000000ffffffff0000000000000000fb0000001c004d006f00740069006f006e0050006c0061006e006e0069006e00670100000308000001760000000000000000fb00000044004d006f00740069006f006e0050006c0061006e006e0069006e00670020002d0020005400720061006a006500630074006f0072007900200053006c00690064006500720000000000ffffffff0000000000000000fb00000052004c00650066007400410072006d004d006f00740069006f006e0050006c0061006e006e0069006e00670020002d0020005400720061006a006500630074006f0072007900200053006c00690064006500720000000000ffffffff0000002600000026000007c9000006c500000001000000020000000100000002fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   RvizVisualToolsGui:
     collapsed: false
   Views:
     collapsed: false
-  Width: 1533
+  Width: 3066
   X: 134
   Y: 55
