@@ -1,4 +1,4 @@
-position_joint_position_controller:
+panda_left_position_joint_position_controller:
     type: franka_ros_controllers/PositionJointPositionController
     joint_names:
         - panda_left_joint1
@@ -9,7 +9,7 @@ position_joint_position_controller:
         - panda_left_joint6
         - panda_left_joint7
 
-velocity_joint_velocity_controller:
+panda_left_velocity_joint_velocity_controller:
     type: franka_ros_controllers/VelocityJointVelocityController
     joint_names:
         - panda_left_joint1
@@ -21,7 +21,7 @@ velocity_joint_velocity_controller:
         - panda_left_joint7
 
 
-effort_joint_impedance_controller:
+panda_left_effort_joint_impedance_controller:
     type: franka_ros_controllers/EffortJointImpedanceController
     arm_id: panda_left
     joint_names:
@@ -51,7 +51,7 @@ effort_joint_impedance_controller:
     publish_rate: 30.0
     coriolis_factor: 1.0
 
-effort_joint_position_controller:
+panda_left_effort_joint_position_controller:
     type: franka_ros_controllers/EffortJointPositionController
     arm_id: panda_left
     joint_names:
@@ -80,7 +80,7 @@ effort_joint_position_controller:
         - 10.0
     publish_rate: 30.0
 
-effort_joint_torque_controller:
+panda_left_effort_joint_torque_controller:
     type: franka_ros_controllers/EffortJointTorqueController
     arm_id: panda_left
     compensate_coriolis: false

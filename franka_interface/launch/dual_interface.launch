@@ -8,7 +8,6 @@
   <arg name="load_demo_planning_scene" default="false"/>
 
   <group ns="panda_left">
-    <rosparam command="load" file="$(find franka_ros_controllers)/config/ros_left_arm_controllers.yaml" ns="franka_ros_interface"/>
     <!-- Panda Control Interface -->
     <param name="robot_description" command="$(find xacro)/xacro '$(find franka_panda_description)/robots/panda_left_arm_hand.urdf.xacro'" if="$(arg load_gripper)" />
     <param name="robot_description" command="$(find xacro)/xacro '$(find franka_panda_description)/robots/panda_left_arm.urdf.xacro'" unless="$(arg load_gripper)" />
@@ -48,11 +47,12 @@
     <node name="controllers" pkg="controller_manager" type="spawner" respawn="false" output="screen" args="position_joint_trajectory_controller"/>
 
     <!-- Load the custom controllers -->
+    <rosparam command="load" file="$(find franka_ros_controllers)/config/ros_left_arm_controllers.yaml" ns="franka_ros_interface"/>
     <group if="$(eval arg('start_controllers') == true)">
       <node name="load_controllers" pkg="controller_manager" type="controller_manager" respawn="false"
             output="screen" args="load
-            franka_ros_interface/velocity_joint_velocity_controller
-            franka_ros_interface/position_joint_position_controller">
+            franka_ros_interface/panda_left_velocity_joint_velocity_controller
+            franka_ros_interface/panda_left_position_joint_position_controller">
         <!--            franka_ros_interface/effort_joint_impedance_controller-->
         <!--            franka_ros_interface/effort_joint_position_controller-->
         <!--            franka_ros_interface/effort_joint_torque_controller-->
@@ -76,7 +76,6 @@
 
 
   <group ns="panda_right">
-    <rosparam command="load" file="$(find franka_ros_controllers)/config/ros_right_arm_controllers.yaml" ns="franka_ros_interface"/>
     <!-- Panda Control Interface -->
     <param name="robot_description" command="$(find xacro)/xacro '$(find franka_panda_description)/robots/panda_right_arm_hand.urdf.xacro'" if="$(arg load_gripper)" />
     <param name="robot_description" command="$(find xacro)/xacro '$(find franka_panda_description)/robots/panda_right_arm.urdf.xacro'" unless="$(arg load_gripper)" />
@@ -116,12 +115,13 @@
 
     <node name="controllers" pkg="controller_manager" type="spawner" respawn="false" output="screen" args="position_joint_trajectory_controller"/>
 
+    <rosparam command="load" file="$(find franka_ros_controllers)/config/ros_right_arm_controllers.yaml" ns="franka_ros_interface"/>
     <!-- Load the custom controllers -->
     <group if="$(eval arg('start_controllers') == true)">
       <node name="load_controllers" pkg="controller_manager" type="controller_manager" respawn="false"
             output="screen" args="load
-            franka_ros_interface/velocity_joint_velocity_controller
-            franka_ros_interface/position_joint_position_controller">
+            franka_ros_interface/panda_right_velocity_joint_velocity_controller
+            franka_ros_interface/panda_right_position_joint_position_controller">
         <!--            franka_ros_interface/effort_joint_impedance_controller-->
         <!--            franka_ros_interface/effort_joint_position_controller-->
         <!--            franka_ros_interface/effort_joint_torque_controller-->
