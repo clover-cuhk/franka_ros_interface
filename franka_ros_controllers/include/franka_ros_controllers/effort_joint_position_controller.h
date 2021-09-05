@@ -57,6 +57,8 @@ class EffortJointPositionController : public controller_interface::MultiInterfac
   void update(const ros::Time&, const ros::Duration& period) override;
 
  private:
+  std::string controller_name_;
+
   // Saturation
   std::array<double, 7> saturateTorqueRate(
       const std::array<double, 7>& tau_d_calculated,

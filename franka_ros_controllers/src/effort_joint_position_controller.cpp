@@ -38,117 +38,112 @@ namespace franka_ros_controllers {
 
   bool EffortJointPositionController::init(hardware_interface::RobotHW* robot_hw,
                                            ros::NodeHandle& node_handle) {
-    std::string controller_prefix = "EffortJointPositionController: ";
+    controller_name_ = "EffortJointPositionController";
 
     /// Check which arm is using the controller (also support using a single arm)
     // FIXME For now, we hardcoded the ns prefix to be: panda_left, panda_right
     const std::string& prefix = node_handle.getNamespace();
     int is_left = -1;
     if (prefix.find("left") != std::string::npos) {
-      ROS_INFO_STREAM(controller_prefix << "Initializing the left arm");
+      ROS_INFO_STREAM_NAMED(controller_name_, "Initializing the left arm");
       is_left = 1;
     } else if (prefix.find("right") != std::string::npos) {
-      ROS_INFO_STREAM(controller_prefix << "Initializing the right arm");
+      ROS_INFO_STREAM_NAMED(controller_name_, "Initializing the right arm");
       is_left = 0;
     } else {
-      ROS_INFO_STREAM(controller_prefix << "Initializing the default arm");
+      ROS_INFO_STREAM_NAMED(controller_name_, "Initializing the default arm");
     }
 
     std::string arm_id;
     if (!node_handle.getParam("/robot_config/arm_id", arm_id)) {
       if (is_left == 1) {
         if (!node_handle.getParam("/panda_left/robot_config/arm_id", arm_id)) {
-          ROS_ERROR_STREAM(controller_prefix << "Could not read parameter arm_id for the left arm");
+          ROS_ERROR_STREAM_NAMED(controller_name_, "Could not read parameter arm_id for the left arm");
           return false;
         }
       } else if (is_left == 0) {
         if (!node_handle.getParam("/panda_right/robot_config/arm_id", arm_id)) {
-          ROS_ERROR_STREAM(controller_prefix << "Could not read parameter arm_id for the right arm");
+          ROS_ERROR_STREAM_NAMED(controller_name_, "Could not read parameter arm_id for the right arm");
           return false;
         }
       } else {
-        ROS_ERROR_STREAM(controller_prefix << "Could not read parameter arm_id");
+        ROS_ERROR_STREAM_NAMED(controller_name_, "Could not read parameter arm_id");
         return false;
       }
     }
 
     franka_state_interface_ = robot_hw->get<franka_hw::FrankaStateInterface>();
     if (franka_state_interface_ == nullptr) {
-      ROS_ERROR("EffortJointPositionController: Could not get Franka state interface from hardware");
+      ROS_ERROR_NAMED(controller_name_, "Could not get Franka state interface from hardware");
       return false;
     }
 
     if (!node_handle.getParam("/robot_config/joint_names", joint_limits_.joint_names)) {
       if (is_left == 1) {
         if (!node_handle.getParam("/panda_left/robot_config/joint_names", joint_limits_.joint_names)) {
-          ROS_ERROR_STREAM(controller_prefix << "Left arm got no names");
+          ROS_ERROR_STREAM_NAMED(controller_name_, "Left arm got no names");
           return false;
         }
       } else if (is_left == 0) {
         if(!node_handle.getParam("/panda_right/robot_config/joint_names", joint_limits_.joint_names)) {
-          ROS_ERROR_STREAM(controller_prefix << "Right arm got no names");
+          ROS_ERROR_STREAM_NAMED(controller_name_, "Right arm got no names");
           return false;
         }
       } else {
-        ROS_ERROR_STREAM(controller_prefix << "Cannot get joint names from default or left/right robot config");
+        ROS_ERROR_STREAM_NAMED(controller_name_, "Cannot get joint names from default or left/right robot config");
         return false;
       }
     }
     if (joint_limits_.joint_names.size() != 7) {
-      ROS_ERROR_STREAM(controller_prefix << "Wrong number of joint names, got "
-                                         << joint_limits_.joint_names.size() << " instead of 7 names!");
+      ROS_ERROR_STREAM_NAMED(controller_name_, "Wrong number of joint names, got "
+          << joint_limits_.joint_names.size() << " instead of 7 names!");
       return false;
     }
 
     if (!node_handle.getParam("k_gains", k_gains_) || k_gains_.size() != 7) {
-      ROS_ERROR(
-          "EffortJointPositionController:  Invalid or no k_gain parameters provided, aborting "
-          "controller init!");
+      ROS_ERROR_NAMED(controller_name_, "Invalid or no k_gain parameters provided, aborting controller init!");
       return false;
     }
 
     if (!node_handle.getParam("d_gains", d_gains_) || d_gains_.size() != 7) {
-      ROS_ERROR(
-          "EffortJointPositionController:  Invalid or no d_gain parameters provided, aborting "
-          "controller init!");
+      ROS_ERROR_NAMED(controller_name_, "Invalid or no d_gain parameters provided, aborting controller init!");
       return false;
     }
 
     k_gains_target_.clear();
     d_gains_target_.clear();
 
-
     std::map<std::string, double> pos_limit_lower_map;
     std::map<std::string, double> pos_limit_upper_map;
     if (!node_handle.getParam("/robot_config/joint_config/joint_position_limit/lower", pos_limit_lower_map) ) {
       if (is_left == 1) {
         if (!node_handle.getParam("/panda_left/robot_config/joint_config/joint_position_limit/lower", pos_limit_lower_map)) {
-          ROS_ERROR_STREAM(controller_prefix << "Cannot get left arm joint position lower limit");
+          ROS_ERROR_STREAM_NAMED(controller_name_, "Cannot get left arm joint position lower limit");
           return false;
         }
       } else if (is_left == 0) {
         if (!node_handle.getParam("/panda_right/robot_config/joint_config/joint_position_limit/lower", pos_limit_lower_map)) {
-          ROS_ERROR_STREAM(controller_prefix << "Cannot get right arm joint position lower limit");
+          ROS_ERROR_STREAM_NAMED(controller_name_, "Cannot get right arm joint position lower limit");
           return false;
         }
       } else {
-        ROS_ERROR_STREAM(controller_prefix << "Cannot get joint position lower limit from default or left/right robot config");
+        ROS_ERROR_STREAM_NAMED(controller_name_, "Cannot get joint position lower limit from default or left/right robot config");
         return false;
       }
     }
     if (!node_handle.getParam("/robot_config/joint_config/joint_position_limit/upper", pos_limit_upper_map) ) {
       if (is_left == 1) {
         if (!node_handle.getParam("/panda_left/robot_config/joint_config/joint_position_limit/upper", pos_limit_upper_map)) {
-          ROS_ERROR_STREAM(controller_prefix << "Cannot get left arm joint position upper limit");
+          ROS_ERROR_STREAM_NAMED(controller_name_, "Cannot get left arm joint position upper limit");
           return false;
         }
       } else if (is_left == 0) {
         if(!node_handle.getParam("/panda_right/robot_config/joint_config/joint_position_limit/upper", pos_limit_upper_map)) {
-          ROS_ERROR_STREAM(controller_prefix << "Cannot get right arm joint position upper limit");
+          ROS_ERROR_STREAM_NAMED(controller_name_, "Cannot get right arm joint position upper limit");
           return false;
         }
       } else {
-        ROS_ERROR_STREAM(controller_prefix << "Cannot get joint position upper limit from default or left/right robot config");
+        ROS_ERROR_STREAM_NAMED(controller_name_, "Cannot get joint position upper limit from default or left/right robot config");
         return false;
       }
     }
@@ -158,22 +153,22 @@ namespace franka_ros_controllers {
         joint_limits_.position_lower.push_back(pos_limit_lower_map[joint_limits_.joint_names[i]]);
       }
       else {
-        ROS_ERROR("EffortJointPositionController: Unable to find lower position limit values for joint %s...",
-                  joint_limits_.joint_names[i].c_str());
+        ROS_ERROR_NAMED(controller_name_, "Unable to find lower position limit values for joint %s...",
+                        joint_limits_.joint_names[i].c_str());
       }
       if (pos_limit_upper_map.find(joint_limits_.joint_names[i]) != pos_limit_upper_map.end()) {
         joint_limits_.position_upper.push_back(pos_limit_upper_map[joint_limits_.joint_names[i]]);
       }
       else {
-        ROS_ERROR("EffortJointPositionController: Unable to find upper position limit  values for joint %s...",
-                  joint_limits_.joint_names[i].c_str());
+        ROS_ERROR_NAMED(controller_name_, "Unable to find upper position limit values for joint %s...",
+                        joint_limits_.joint_names[i].c_str());
       }
     }
 
     double controller_state_publish_rate(30.0);
-    if (!node_handle.getParam("controller_state_publish_rate", controller_state_publish_rate)) {
-      ROS_INFO_STREAM("EffortJointPositionController: Did not find controller_state_publish_rate. Using default "
-                          << controller_state_publish_rate << " [Hz].");
+    if (!node_handle.getParam("publish_rate", controller_state_publish_rate)) {
+      ROS_INFO_STREAM_NAMED(controller_name_, "Did not find controller_state_publish_rate. Using default "
+          << controller_state_publish_rate << " [Hz].");
     }
     trigger_publish_ = franka_hw::TriggerRate(controller_state_publish_rate);
 
@@ -181,22 +176,20 @@ namespace franka_ros_controllers {
       franka_state_handle_ = std::make_unique<franka_hw::FrankaStateHandle>(
           franka_state_interface_->getHandle(arm_id + "_robot"));
     } catch (const hardware_interface::HardwareInterfaceException& ex) {
-      ROS_ERROR_STREAM("EffortJointPositionController: Exception getting franka state handle: " << ex.what());
+      ROS_ERROR_STREAM_NAMED(controller_name_, "Exception getting franka state handle: " << ex.what());
       return false;
     }
 
     auto* effort_joint_interface = robot_hw->get<hardware_interface::EffortJointInterface>();
     if (effort_joint_interface == nullptr) {
-      ROS_ERROR_STREAM(
-          "EffortJointPositionController: Error getting effort joint interface from hardware");
+      ROS_ERROR_STREAM_NAMED(controller_name_, "Error getting effort joint interface from hardware");
       return false;
     }
     for (size_t i = 0; i < 7; ++i) {
       try {
         joint_handles_.push_back(effort_joint_interface->getHandle(joint_limits_.joint_names[i]));
       } catch (const hardware_interface::HardwareInterfaceException& ex) {
-        ROS_ERROR_STREAM(
-            "EffortJointPositionController: Exception getting joint handles: " << ex.what());
+        ROS_ERROR_STREAM_NAMED(controller_name_, "Exception getting joint handles: " << ex.what());
         return false;
       }
       k_gains_target_.push_back(k_gains_[i]);
@@ -208,8 +201,8 @@ namespace franka_ros_controllers {
 
     dynamic_server_controller_config_ = std::make_unique<
         dynamic_reconfigure::Server<franka_ros_controllers::joint_controller_paramsConfig>>(
-
         dynamic_reconfigure_controller_gains_node_);
+
     dynamic_server_controller_config_->setCallback(
         boost::bind(&EffortJointPositionController::controllerConfigCallback, this, _1, _2));
 
@@ -330,25 +323,21 @@ namespace franka_ros_controllers {
 
     if (msg->mode == franka_core_msgs::JointCommand::POSITION_MODE){
       if (msg->position.size() != 7) {
-        ROS_ERROR_STREAM(
-            "EffortJointPositionController: Published Commands are not of size 7");
+        ROS_ERROR_STREAM_NAMED(controller_name_, "Published Commands are not of size 7");
         pos_d_target_ = prev_pos_;
         std::fill(p_error_last_.begin(), p_error_last_.end(), 0);
         d_error_ = p_error_last_;
       }
       else if (checkPositionLimits(msg->position)) {
-        ROS_ERROR_STREAM(
-            "PositionJointPositionController: Commanded positions are beyond allowed position limits.");
+        ROS_ERROR_STREAM_NAMED(controller_name_, "Commanded positions are beyond allowed position limits.");
         pos_d_target_ = prev_pos_;
         std::fill(p_error_last_.begin(), p_error_last_.end(), 0);
         d_error_ = p_error_last_;
       }
       else {
         std::copy_n(msg->position.begin(), 7, pos_d_target_.begin());
-
       }
     }
-    // else ROS_ERROR_STREAM("EffortJointPositionController: Published Command msg are not of JointCommand::POSITION_MODE! Dropping message");
   }
 
   void EffortJointPositionController::controllerConfigCallback(
