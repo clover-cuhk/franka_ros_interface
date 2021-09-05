@@ -172,7 +172,8 @@ namespace franka_ros_controllers {
       publisher_controller_states_.msg_.joint_controller_states.resize(joint_limits_.joint_names.size());
     }
 
-    for (size_t i = 0; i < 7; ++i) { // this has to be done again; apparently when the dyn callback is initialised everything is set to zeros again!?
+    // this has to be done again; since dynamic config may not instantaneously available.
+    for (size_t i = 0; i < 7; ++i) {
       k_gains_target_[i] = k_gains_[i];
       d_gains_target_[i] = d_gains_[i];
     }
@@ -211,9 +212,7 @@ namespace franka_ros_controllers {
     // Compute torque command using PD control law
     std::array<double, 7> tau_d_calculated{};
     for (size_t i = 0; i < 7; ++i) {
-
-      tau_d_calculated[i] = k_gains_[i] * error[i]  +
-                            d_gains_[i] * d_error_[i];
+      tau_d_calculated[i] = k_gains_[i] * error[i] + d_gains_[i] * d_error_[i];
     }
 
     p_error_last_ = error;
@@ -241,18 +240,15 @@ namespace franka_ros_controllers {
 
     for (size_t i = 0; i < 7; ++i) {
       joint_handles_[i].setCommand(tau_d_saturated[i]);
-
       prev_pos_[i] = robot_state.q[i];
-
       k_gains_[i] = filter_params_ * k_gains_target_[i] + (1.0 - filter_params_) * k_gains_[i];
       d_gains_[i] = filter_params_ * d_gains_target_[i] + (1.0 - filter_params_) * d_gains_[i];
     }
-
   }
 
   bool EffortJointPositionController::checkPositionLimits(std::vector<double> positions)
   {
-    for (size_t i = 0;  i < 7; ++i){
+    for (size_t i = 0;  i < 7; ++i) {
       if (!((positions[i] <= joint_limits_.position_upper[i]) && (positions[i] >= joint_limits_.position_lower[i]))){
         return true;
       }
