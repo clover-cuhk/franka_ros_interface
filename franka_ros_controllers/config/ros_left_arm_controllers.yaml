@@ -1,4 +1,4 @@
-panda_left_position_joint_position_controller:
+position_joint_position_controller:
     type: franka_ros_controllers/PositionJointPositionController
     joint_names:
         - panda_left_joint1
@@ -8,8 +8,26 @@ panda_left_position_joint_position_controller:
         - panda_left_joint5
         - panda_left_joint6
         - panda_left_joint7
+    joint_position_limit:
+        lower:
+            panda_left_joint1: -2.8973  # rad
+            panda_left_joint2: -1.7628  # rad
+            panda_left_joint3: -2.8973  # rad
+            panda_left_joint4: -3.0718  # rad
+            panda_left_joint5: -2.8973  # rad
+            panda_left_joint6: -0.0175  # rad
+            panda_left_joint7: -2.8973  # rad
+        upper:
+            panda_left_joint1: 2.8973  # rad
+            panda_left_joint2: 1.7628  # rad
+            panda_left_joint3: 2.8973  # rad
+            panda_left_joint4: -0.0698 # rad
+            panda_left_joint5: 2.8973  # rad
+            panda_left_joint6: 3.7525  # rad
+            panda_left_joint7: 2.8973  # rad
+    publish_rate: 30.0
 
-panda_left_velocity_joint_velocity_controller:
+velocity_joint_velocity_controller:
     type: franka_ros_controllers/VelocityJointVelocityController
     joint_names:
         - panda_left_joint1
@@ -19,9 +37,17 @@ panda_left_velocity_joint_velocity_controller:
         - panda_left_joint5
         - panda_left_joint6
         - panda_left_joint7
+    publish_rate: 30.0
+    joint_velocity_limit:
+        panda_left_joint1: 2.1750 # rad / sec
+        panda_left_joint2: 2.1750 # rad / sec
+        panda_left_joint3: 2.1750 # rad / sec
+        panda_left_joint4: 2.1750 # rad / sec
+        panda_left_joint5: 2.6100 # rad / sec
+        panda_left_joint6: 2.6100 # rad / sec
+        panda_left_joint7: 2.6100 # rad / sec
 
-
-panda_left_effort_joint_impedance_controller:
+effort_joint_impedance_controller:
     type: franka_ros_controllers/EffortJointImpedanceController
     arm_id: panda_left
     joint_names:
@@ -50,8 +76,33 @@ panda_left_effort_joint_impedance_controller:
         - 10.0
     publish_rate: 30.0
     coriolis_factor: 1.0
+    joint_position_limit:
+        lower:
+            panda_left_joint1: -2.8973  # rad
+            panda_left_joint2: -1.7628  # rad
+            panda_left_joint3: -2.8973  # rad
+            panda_left_joint4: -3.0718  # rad
+            panda_left_joint5: -2.8973  # rad
+            panda_left_joint6: -0.0175  # rad
+            panda_left_joint7: -2.8973  # rad
+        upper:
+            panda_left_joint1: 2.8973  # rad
+            panda_left_joint2: 1.7628  # rad
+            panda_left_joint3: 2.8973  # rad
+            panda_left_joint4: -0.0698 # rad
+            panda_left_joint5: 2.8973  # rad
+            panda_left_joint6: 3.7525  # rad
+            panda_left_joint7: 2.8973  # rad
+    joint_velocity_limit:
+        panda_left_joint1: 2.1750 # rad / sec
+        panda_left_joint2: 2.1750 # rad / sec
+        panda_left_joint3: 2.1750 # rad / sec
+        panda_left_joint4: 2.1750 # rad / sec
+        panda_left_joint5: 2.6100 # rad / sec
+        panda_left_joint6: 2.6100 # rad / sec
+        panda_left_joint7: 2.6100 # rad / sec
 
-panda_left_effort_joint_position_controller:
+effort_joint_position_controller:
     type: franka_ros_controllers/EffortJointPositionController
     arm_id: panda_left
     joint_names:
@@ -79,11 +130,29 @@ panda_left_effort_joint_position_controller:
         - 20.0
         - 10.0
     publish_rate: 30.0
+    joint_position_limit:
+        lower:
+            panda_left_joint1: -2.8973  # rad
+            panda_left_joint2: -1.7628  # rad
+            panda_left_joint3: -2.8973  # rad
+            panda_left_joint4: -3.0718  # rad
+            panda_left_joint5: -2.8973  # rad
+            panda_left_joint6: -0.0175  # rad
+            panda_left_joint7: -2.8973  # rad
+        upper:
+            panda_left_joint1: 2.8973  # rad
+            panda_left_joint2: 1.7628  # rad
+            panda_left_joint3: 2.8973  # rad
+            panda_left_joint4: -0.0698 # rad
+            panda_left_joint5: 2.8973  # rad
+            panda_left_joint6: 3.7525  # rad
+            panda_left_joint7: 2.8973  # rad
 
-panda_left_effort_joint_torque_controller:
+effort_joint_torque_controller:
     type: franka_ros_controllers/EffortJointTorqueController
     arm_id: panda_left
     compensate_coriolis: false
+    publish_rate: 30.0
     joint_names:
         - panda_left_joint1
         - panda_left_joint2
@@ -92,4 +161,12 @@ panda_left_effort_joint_torque_controller:
         - panda_left_joint5
         - panda_left_joint6
         - panda_left_joint7
+    joint_effort_limit:
+        panda_left_joint1: 87 # Nm
+        panda_left_joint2: 87 # Nm
+        panda_left_joint3: 87 # Nm
+        panda_left_joint4: 87 # Nm
+        panda_left_joint5: 12 # Nm
+        panda_left_joint6: 12 # Nm
+        panda_left_joint7: 12 # Nm
 

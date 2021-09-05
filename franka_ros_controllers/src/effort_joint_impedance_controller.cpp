@@ -53,21 +53,9 @@ namespace franka_ros_controllers {
     }
 
     std::string arm_id;
-    if (!node_handle.getParam("/robot_config/arm_id", arm_id)) {
-      if (is_left == 1) {
-        if (!node_handle.getParam("/panda_left/robot_config/arm_id", arm_id)) {
-          ROS_ERROR("EffortJointImpedanceController: Could not read parameter arm_id for the left arm");
-          return false;
-        }
-      } else if (is_left == 0) {
-        if (!node_handle.getParam("/panda_right/robot_config/arm_id", arm_id)) {
-          ROS_ERROR("EffortJointImpedanceController: Could not read parameter arm_id for the right arm");
-          return false;
-        }
-      } else {
-        ROS_ERROR("EffortJointImpedanceController: Could not read parameter arm_id");
-        return false;
-      }
+    if (!node_handle.getParam("arm_id", arm_id)) {
+      ROS_ERROR("EffortJointImpedanceController: Could not read parameter arm_id");
+      return false;
     }
 
     franka_state_interface_ = robot_hw->get<franka_hw::FrankaStateInterface>();
@@ -76,22 +64,10 @@ namespace franka_ros_controllers {
       return false;
     }
 
-    if (!node_handle.getParam("/robot_config/joint_names", joint_limits_.joint_names)) {
-      if (is_left == 1) {
-        if (!node_handle.getParam("/panda_left/robot_config/joint_names", joint_limits_.joint_names)) {
-          ROS_ERROR("EffortJointImpedanceController: Left arm got no names");
-          return false;
-        }
-      } else if (is_left == 0) {
-        if(!node_handle.getParam("/panda_right/robot_config/joint_names", joint_limits_.joint_names)) {
-          ROS_ERROR("EffortJointImpedanceController: Right arm got no names");
-          return false;
-        }
-      } else {
-        ROS_ERROR_STREAM(
-            "EffortJointImpedanceController: Cannot get joint names from default or left/right robot config");
-        return false;
-      }
+    if (!node_handle.getParam("joint_names", joint_limits_.joint_names)) {
+      ROS_ERROR_STREAM(
+          "EffortJointImpedanceController: Cannot get joint names from default or left/right robot config");
+      return false;
     }
     if (joint_limits_.joint_names.size() != 7) {
       ROS_ERROR_STREAM("EffortJointImpedanceController: Wrong number of joint names, got "
@@ -121,58 +97,22 @@ namespace franka_ros_controllers {
 
     std::map<std::string, double> pos_limit_lower_map;
     std::map<std::string, double> pos_limit_upper_map;
-    if (!node_handle.getParam("/robot_config/joint_config/joint_position_limit/lower", pos_limit_lower_map) ) {
-      if (is_left == 1) {
-        if (!node_handle.getParam("/panda_left/robot_config/joint_config/joint_position_limit/lower", pos_limit_lower_map)) {
-          ROS_ERROR("EffortJointImpedanceController: Cannot get left arm joint position lower limit");
-          return false;
-        }
-      } else if (is_left == 0) {
-        if (!node_handle.getParam("/panda_right/robot_config/joint_config/joint_position_limit/lower", pos_limit_lower_map)) {
-          ROS_ERROR("EffortJointImpedanceController: Cannot get right arm joint position lower limit");
-          return false;
-        }
-      } else {
-        ROS_ERROR_STREAM(
-            "EffortJointImpedanceController: Cannot get joint position lower limit from default or left/right robot config");
-        return false;
-      }
+    if (!node_handle.getParam("joint_position_limit/lower", pos_limit_lower_map) ) {
+      ROS_ERROR_STREAM(
+          "EffortJointImpedanceController: Cannot get joint position lower limit from default or left/right robot config");
+      return false;
     }
-    if (!node_handle.getParam("/robot_config/joint_config/joint_position_limit/upper", pos_limit_upper_map) ) {
-      if (is_left == 1) {
-        if (!node_handle.getParam("/panda_left/robot_config/joint_config/joint_position_limit/upper", pos_limit_upper_map)) {
-          ROS_ERROR("EffortJointImpedanceController: Cannot get left arm joint position upper limit");
-          return false;
-        }
-      } else if (is_left == 0) {
-        if(!node_handle.getParam("/panda_right/robot_config/joint_config/joint_position_limit/upper", pos_limit_upper_map)) {
-          ROS_ERROR("EffortJointImpedanceController: Cannot get right arm joint position upper limit");
-          return false;
-        }
-      } else {
-        ROS_ERROR_STREAM(
-            "EffortJointImpedanceController: Cannot get joint position upper limit from default or left/right robot config");
-        return false;
-      }
+    if (!node_handle.getParam("joint_position_limit/upper", pos_limit_upper_map) ) {
+      ROS_ERROR_STREAM(
+          "EffortJointImpedanceController: Cannot get joint position upper limit from default or left/right robot config");
+      return false;
     }
 
     std::map<std::string, double> vel_limit_map;
-    if (!node_handle.getParam("/robot_config/joint_config/joint_velocity_limit", vel_limit_map)) {
-      if (is_left == 1) {
-        if (!node_handle.getParam("/panda_left/robot_config/joint_config/joint_velocity_limit", vel_limit_map)) {
-          ROS_ERROR("EffortJointImpedanceController: Cannot get left arm joint velocity limit");
-          return false;
-        }
-      } else if (is_left == 0) {
-        if (!node_handle.getParam("/panda_right/robot_config/joint_config/joint_velocity_limit", vel_limit_map)) {
-          ROS_ERROR("EffortJointImpedanceController: Cannot get right arm joint velocity limit");
-          return false;
-        }
-      } else {
-        ROS_ERROR(
-            "EffortJointImpedanceController: Cannot get joint velocity limit from default or left/right robot config");
-        return false;
-      }
+    if (!node_handle.getParam("joint_velocity_limit", vel_limit_map)) {
+      ROS_ERROR(
+          "EffortJointImpedanceController: Cannot get joint velocity limit from default or left/right robot config");
+      return false;
     }
 
     for (size_t i = 0; i < joint_limits_.joint_names.size(); ++i){

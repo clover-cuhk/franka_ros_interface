@@ -60,7 +60,7 @@ int main(int argc, char** argv) {
   std::atomic_bool has_error(false);
 
   ServiceContainer services;
-    services
+  services
       .advertiseService<franka_msgs::SetJointImpedance>(base_node_handle, "franka_ros_interface/franka_control/set_joint_impedance",
                                                         [&robot](auto&& req, auto&& res) {
                                                           return franka_hw::setJointImpedance(
@@ -104,11 +104,11 @@ int main(int argc, char** argv) {
         }
       },
       false);
-    franka_control.update(robot.readOnce());
+  franka_control.update(robot.readOnce());
 
   boost::shared_ptr<controller_manager::ControllerManager> control_manager;
 
-  control_manager.reset(new controller_manager::ControllerManager(&franka_control, public_node_handle)); 
+  control_manager.reset(new controller_manager::ControllerManager(&franka_control, public_node_handle));
 
   franka_interface::MotionControllerInterface motion_controller_interface_;
   motion_controller_interface_.init(public_node_handle, control_manager);

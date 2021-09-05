@@ -64,22 +64,10 @@ namespace franka_ros_controllers {
       ROS_INFO("VelocityJointVelocityController: Initializing the default arm");
     }
 
-    if (!node_handle.getParam("/robot_config/joint_names", joint_limits_.joint_names)) {
-      if (is_left == 1) {
-        if (!node_handle.getParam("/panda_left/robot_config/joint_names", joint_limits_.joint_names)) {
-          ROS_ERROR("VelocityJointVelocityController: Left arm got no names");
-          return false;
-        }
-      } else if (is_left == 0) {
-        if(!node_handle.getParam("/panda_right/robot_config/joint_names", joint_limits_.joint_names)) {
-          ROS_ERROR("VelocityJointVelocityController: Right arm got no names");
-          return false;
-        }
-      } else {
-        ROS_ERROR_STREAM(
-            "VelocityJointVelocityController: Cannot get joint names from default or left/right robot config");
-        return false;
-      }
+    if (!node_handle.getParam("joint_names", joint_limits_.joint_names)) {
+      ROS_ERROR_STREAM(
+          "VelocityJointVelocityController: Cannot get joint names from default or left/right robot config");
+      return false;
     }
     if (joint_limits_.joint_names.size() != 7) {
       ROS_ERROR_STREAM("VelocityJointVelocityController: Wrong number of joint names, got "
@@ -87,22 +75,10 @@ namespace franka_ros_controllers {
       return false;
     }
     std::map<std::string, double> vel_limit_map;
-    if (!node_handle.getParam("/robot_config/joint_config/joint_velocity_limit", vel_limit_map) ) {
-      if (is_left == 1) {
-        if (!node_handle.getParam("/panda_left/robot_config/joint_config/joint_velocity_limit", vel_limit_map)) {
-          ROS_ERROR("VelocityJointVelocityController: Cannot get left arm joint velocity limit");
-          return false;
-        }
-      } else if (is_left == 0) {
-        if (!node_handle.getParam("/panda_right/robot_config/joint_config/joint_velocity_limit", vel_limit_map)) {
-          ROS_ERROR("VelocityJointVelocityController: Cannot get right arm joint velocity limit");
-          return false;
-        }
-      } else {
-        ROS_ERROR(
-            "VelocityJointVelocityController: Cannot get joint velocity limit from default or left/right robot config");
-        return false;
-      }
+    if (!node_handle.getParam("joint_velocity_limit", vel_limit_map) ) {
+      ROS_ERROR(
+          "VelocityJointVelocityController: Cannot get joint velocity limit from default or left/right robot config");
+      return false;
     }
 
     for (size_t i = 0; i < joint_limits_.joint_names.size(); ++i){

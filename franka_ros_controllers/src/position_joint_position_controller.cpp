@@ -64,22 +64,10 @@ namespace franka_ros_controllers {
       ROS_INFO("PositionJointPositionController: Initializing the default arm");
     }
 
-    if (!node_handle.getParam("/robot_config/joint_names", joint_limits_.joint_names)) {
-      if (is_left == 1) {
-        if (!node_handle.getParam("/panda_left/robot_config/joint_names", joint_limits_.joint_names)) {
-          ROS_ERROR("PositionJointPositionController: Left arm got no names");
-          return false;
-        }
-      } else if (is_left == 0) {
-        if(!node_handle.getParam("/panda_right/robot_config/joint_names", joint_limits_.joint_names)) {
-          ROS_ERROR("PositionJointPositionController: Right arm got no names");
-          return false;
-        }
-      } else {
-        ROS_ERROR_STREAM(
-            "PositionJointPositionController: Cannot get joint names from default or left/right robot config");
-        return false;
-      }
+    if (!node_handle.getParam("joint_names", joint_limits_.joint_names)) {
+      ROS_ERROR_STREAM(
+          "PositionJointPositionController: Cannot get joint names from default or left/right robot config");
+      return false;
     }
     if (joint_limits_.joint_names.size() != 7) {
       ROS_ERROR_STREAM("PositionJointPositionController: Wrong number of joint names, got "
@@ -88,39 +76,15 @@ namespace franka_ros_controllers {
     }
     std::map<std::string, double> pos_limit_lower_map;
     std::map<std::string, double> pos_limit_upper_map;
-    if (!node_handle.getParam("/robot_config/joint_config/joint_position_limit/lower", pos_limit_lower_map) ) {
-      if (is_left == 1) {
-        if (!node_handle.getParam("/panda_left/robot_config/joint_config/joint_position_limit/lower", pos_limit_lower_map)) {
-          ROS_ERROR("PositionJointPositionController: Cannot get left arm joint position lower limit");
-          return false;
-        }
-      } else if (is_left == 0) {
-        if (!node_handle.getParam("/panda_right/robot_config/joint_config/joint_position_limit/lower", pos_limit_lower_map)) {
-          ROS_ERROR("PositionJointPositionController: Cannot get right arm joint position lower limit");
-          return false;
-        }
-      } else {
-        ROS_ERROR_STREAM(
-            "PositionJointPositionController: Cannot get joint position lower limit from default or left/right robot config");
-        return false;
-      }
+    if (!node_handle.getParam("joint_position_limit/lower", pos_limit_lower_map) ) {
+      ROS_ERROR_STREAM(
+          "PositionJointPositionController: Cannot get joint position lower limit from default or left/right robot config");
+      return false;
     }
-    if (!node_handle.getParam("robot_config/joint_config/joint_position_limit/upper", pos_limit_upper_map) ) {
-      if (is_left == 1) {
-        if (!node_handle.getParam("/panda_left/robot_config/joint_config/joint_position_limit/upper", pos_limit_upper_map)) {
-          ROS_ERROR("PositionJointPositionController: Cannot get left arm joint position upper limit");
-          return false;
-        }
-      } else if (is_left == 0) {
-        if(!node_handle.getParam("/panda_right/robot_config/joint_config/joint_position_limit/upper", pos_limit_upper_map)) {
-          ROS_ERROR("PositionJointPositionController: Cannot get right arm joint position upper limit");
-          return false;
-        }
-      } else {
-        ROS_ERROR_STREAM(
-            "PositionJointPositionController: Cannot get joint position upper limit from default or left/right robot config");
-        return false;
-      }
+    if (!node_handle.getParam("joint_position_limit/upper", pos_limit_upper_map) ) {
+      ROS_ERROR_STREAM(
+          "PositionJointPositionController: Cannot get joint position upper limit from default or left/right robot config");
+      return false;
     }
 
     for (size_t i = 0; i < joint_limits_.joint_names.size(); ++i){
@@ -150,7 +114,7 @@ namespace franka_ros_controllers {
     }
 
     double controller_state_publish_rate(30.0);
-    if (!node_handle.getParam("controller_state_publish_rate", controller_state_publish_rate)) {
+    if (!node_handle.getParam("publish_rate", controller_state_publish_rate)) {
       ROS_INFO_STREAM("PositionJointPositionController: Did not find controller_state_publish_rate. Using default "
                           << controller_state_publish_rate << " [Hz].");
     }
@@ -202,22 +166,17 @@ namespace franka_ros_controllers {
 
     if (trigger_publish_() && publisher_controller_states_.trylock()) {
       for (size_t i = 0; i < 7; ++i){
-
         publisher_controller_states_.msg_.joint_controller_states[i].set_point = pos_d_target_[i];
         publisher_controller_states_.msg_.joint_controller_states[i].process_value = pos_d_[i];
         publisher_controller_states_.msg_.joint_controller_states[i].time_step = period.toSec();
-
         publisher_controller_states_.msg_.joint_controller_states[i].header.stamp = time;
-
       }
 
       publisher_controller_states_.unlockAndPublish();
     }
-
     // update parameters changed online either through dynamic reconfigure or through the interactive
     // target by filtering
     filter_joint_pos_ = param_change_filter_ * target_filter_joint_pos_ + (1.0 - param_change_filter_) * filter_joint_pos_;
-
   }
 
   bool PositionJointPositionController::checkPositionLimits(std::vector<double> positions)
@@ -228,7 +187,6 @@ namespace franka_ros_controllers {
         return true;
       }
     }
-
     return false;
   }
 
@@ -240,19 +198,14 @@ namespace franka_ros_controllers {
             "PositionJointPositionController: Published Commands are not of size 7");
         pos_d_ = prev_pos_;
         pos_d_target_ = prev_pos_;
-      }
-      else if (checkPositionLimits(msg->position)) {
+      } else if (checkPositionLimits(msg->position)) {
         ROS_ERROR_STREAM(
             "PositionJointPositionController: Commanded positions are beyond allowed position limits.");
         pos_d_ = prev_pos_;
         pos_d_target_ = prev_pos_;
-
-      }
-      else
-      {
+      } else {
         std::copy_n(msg->position.begin(), 7, pos_d_target_.begin());
       }
-
     }
     // else ROS_ERROR_STREAM("PositionJointPositionController: Published Command msg are not of JointCommand::POSITION_MODE! Dropping message");
   }

@@ -55,21 +55,9 @@ namespace franka_ros_controllers {
     }
 
     std::string arm_id;
-    if (!node_handle.getParam("/robot_config/arm_id", arm_id)) {
-      if (is_left == 1) {
-        if (!node_handle.getParam("/panda_left/robot_config/arm_id", arm_id)) {
-          ROS_ERROR_STREAM_NAMED(controller_name_, "Could not read parameter arm_id for the left arm");
-          return false;
-        }
-      } else if (is_left == 0) {
-        if (!node_handle.getParam("/panda_right/robot_config/arm_id", arm_id)) {
-          ROS_ERROR_STREAM_NAMED(controller_name_, "Could not read parameter arm_id for the right arm");
-          return false;
-        }
-      } else {
-        ROS_ERROR_STREAM_NAMED(controller_name_, "Could not read parameter arm_id");
-        return false;
-      }
+    if (!node_handle.getParam("arm_id", arm_id)) {
+      ROS_ERROR_STREAM_NAMED(controller_name_, "Could not read parameter arm_id");
+      return false;
     }
 
     franka_state_interface_ = robot_hw->get<franka_hw::FrankaStateInterface>();
@@ -78,21 +66,9 @@ namespace franka_ros_controllers {
       return false;
     }
 
-    if (!node_handle.getParam("/robot_config/joint_names", joint_limits_.joint_names)) {
-      if (is_left == 1) {
-        if (!node_handle.getParam("/panda_left/robot_config/joint_names", joint_limits_.joint_names)) {
-          ROS_ERROR_STREAM_NAMED(controller_name_, "Left arm got no names");
-          return false;
-        }
-      } else if (is_left == 0) {
-        if(!node_handle.getParam("/panda_right/robot_config/joint_names", joint_limits_.joint_names)) {
-          ROS_ERROR_STREAM_NAMED(controller_name_, "Right arm got no names");
-          return false;
-        }
-      } else {
-        ROS_ERROR_STREAM_NAMED(controller_name_, "Cannot get joint names from default or left/right robot config");
-        return false;
-      }
+    if (!node_handle.getParam("joint_names", joint_limits_.joint_names)) {
+      ROS_ERROR_STREAM_NAMED(controller_name_, "Could not get joint names");
+      return false;
     }
     if (joint_limits_.joint_names.size() != 7) {
       ROS_ERROR_STREAM_NAMED(controller_name_, "Wrong number of joint names, got "
@@ -115,37 +91,13 @@ namespace franka_ros_controllers {
 
     std::map<std::string, double> pos_limit_lower_map;
     std::map<std::string, double> pos_limit_upper_map;
-    if (!node_handle.getParam("/robot_config/joint_config/joint_position_limit/lower", pos_limit_lower_map) ) {
-      if (is_left == 1) {
-        if (!node_handle.getParam("/panda_left/robot_config/joint_config/joint_position_limit/lower", pos_limit_lower_map)) {
-          ROS_ERROR_STREAM_NAMED(controller_name_, "Cannot get left arm joint position lower limit");
-          return false;
-        }
-      } else if (is_left == 0) {
-        if (!node_handle.getParam("/panda_right/robot_config/joint_config/joint_position_limit/lower", pos_limit_lower_map)) {
-          ROS_ERROR_STREAM_NAMED(controller_name_, "Cannot get right arm joint position lower limit");
-          return false;
-        }
-      } else {
-        ROS_ERROR_STREAM_NAMED(controller_name_, "Cannot get joint position lower limit from default or left/right robot config");
-        return false;
-      }
+    if (!node_handle.getParam("joint_position_limit/lower", pos_limit_lower_map) ) {
+      ROS_ERROR_STREAM_NAMED(controller_name_, "Cannot get joint position lower limit");
+      return false;
     }
-    if (!node_handle.getParam("/robot_config/joint_config/joint_position_limit/upper", pos_limit_upper_map) ) {
-      if (is_left == 1) {
-        if (!node_handle.getParam("/panda_left/robot_config/joint_config/joint_position_limit/upper", pos_limit_upper_map)) {
-          ROS_ERROR_STREAM_NAMED(controller_name_, "Cannot get left arm joint position upper limit");
-          return false;
-        }
-      } else if (is_left == 0) {
-        if(!node_handle.getParam("/panda_right/robot_config/joint_config/joint_position_limit/upper", pos_limit_upper_map)) {
-          ROS_ERROR_STREAM_NAMED(controller_name_, "Cannot get right arm joint position upper limit");
-          return false;
-        }
-      } else {
-        ROS_ERROR_STREAM_NAMED(controller_name_, "Cannot get joint position upper limit from default or left/right robot config");
-        return false;
-      }
+    if (!node_handle.getParam("joint_position_limit/upper", pos_limit_upper_map) ) {
+      ROS_ERROR_STREAM_NAMED(controller_name_, "Cannot get joint position upper limit");
+      return false;
     }
 
     for (size_t i = 0; i < joint_limits_.joint_names.size(); ++i){
@@ -167,7 +119,7 @@ namespace franka_ros_controllers {
 
     double controller_state_publish_rate(30.0);
     if (!node_handle.getParam("publish_rate", controller_state_publish_rate)) {
-      ROS_INFO_STREAM_NAMED(controller_name_, "Did not find controller_state_publish_rate. Using default "
+      ROS_INFO_STREAM_NAMED(controller_name_, "Did not find publish_rate. Using default "
           << controller_state_publish_rate << " [Hz].");
     }
     trigger_publish_ = franka_hw::TriggerRate(controller_state_publish_rate);

@@ -51,11 +51,11 @@
     <group if="$(eval arg('start_controllers') == true)">
       <node name="load_controllers" pkg="controller_manager" type="controller_manager" respawn="false"
             output="screen" args="load
-            franka_ros_interface/panda_left_effort_joint_position_controller
-            franka_ros_interface/panda_left_effort_joint_torque_controller
-            franka_ros_interface/panda_left_effort_joint_impedance_controller
-            franka_ros_interface/panda_left_velocity_joint_velocity_controller
-            franka_ros_interface/panda_left_position_joint_position_controller">
+            franka_ros_interface/effort_joint_position_controller
+            franka_ros_interface/effort_joint_torque_controller
+            franka_ros_interface/effort_joint_impedance_controller
+            franka_ros_interface/velocity_joint_velocity_controller
+            franka_ros_interface/position_joint_position_controller">
       </node>
     </group>
 
@@ -120,11 +120,11 @@
     <group if="$(eval arg('start_controllers') == true)">
       <node name="load_controllers" pkg="controller_manager" type="controller_manager" respawn="false"
             output="screen" args="load
-            franka_ros_interface/panda_right_effort_joint_torque_controller
-            franka_ros_interface/panda_right_effort_joint_position_controller
-            franka_ros_interface/panda_right_effort_joint_impedance_controller
-            franka_ros_interface/panda_right_velocity_joint_velocity_controller
-            franka_ros_interface/panda_right_position_joint_position_controller">
+            franka_ros_interface/effort_joint_torque_controller
+            franka_ros_interface/effort_joint_position_controller
+            franka_ros_interface/effort_joint_impedance_controller
+            franka_ros_interface/velocity_joint_velocity_controller
+            franka_ros_interface/position_joint_position_controller">
       </node>
     </group>
 

@@ -53,38 +53,14 @@ namespace franka_ros_controllers {
     }
 
     std::string arm_id;
-    if (!node_handle.getParam("/robot_config/arm_id", arm_id)) {
-      if (is_left == 1) {
-        if (!node_handle.getParam("/panda_left/robot_config/arm_id", arm_id)) {
-          ROS_ERROR_STREAM_NAMED(controller_name_, "Could not read parameter arm_id for the left arm");
-          return false;
-        }
-      } else if (is_left == 0) {
-        if (!node_handle.getParam("/panda_right/robot_config/arm_id", arm_id)) {
-          ROS_ERROR_STREAM_NAMED(controller_name_, "Could not read parameter arm_id for the right arm");
-          return false;
-        }
-      } else {
+    if (!node_handle.getParam("arm_id", arm_id)) {
         ROS_ERROR_STREAM_NAMED(controller_name_, "Could not read parameter arm_id");
         return false;
-      }
     }
 
-    if (!node_handle.getParam("/robot_config/joint_names", joint_limits_.joint_names)) {
-      if (is_left == 1) {
-        if (!node_handle.getParam("/panda_left/robot_config/joint_names", joint_limits_.joint_names)) {
-          ROS_ERROR_STREAM_NAMED(controller_name_, "Left arm got no names");
-          return false;
-        }
-      } else if (is_left == 0) {
-        if(!node_handle.getParam("/panda_right/robot_config/joint_names", joint_limits_.joint_names)) {
-          ROS_ERROR_STREAM_NAMED(controller_name_, "Right arm got no names");
-          return false;
-        }
-      } else {
+    if (!node_handle.getParam("joint_names", joint_limits_.joint_names)) {
         ROS_ERROR_STREAM_NAMED(controller_name_, "Cannot get joint names from default or left/right robot config");
         return false;
-      }
     }
     if (joint_limits_.joint_names.size() != 7) {
       ROS_ERROR_STREAM_NAMED(controller_name_, "Wrong number of joint names, got "
@@ -94,20 +70,8 @@ namespace franka_ros_controllers {
 
     bool enable_coriolis;
     if (!node_handle.getParam("compensate_coriolis", enable_coriolis)) {
-      if (is_left == 1) {
-        if (!node_handle.getParam("/panda_left/franka_ros_interface/effort_joint_torque_controller/compensate_coriolis", enable_coriolis)) {
-          ROS_ERROR_STREAM_NAMED(controller_name_, "Could not read parameter compensate_coriolis for left arm");
-          return false;
-        }
-      } else if (is_left == 0) {
-        if(!node_handle.getParam("/panda_right/franka_ros_interface/effort_joint_torque_controller/compensate_coriolis", enable_coriolis)) {
-          ROS_ERROR_STREAM_NAMED(controller_name_, "Could not read parameter compensate_coriolis for right arm");
-          return false;
-        }
-      } else {
         ROS_ERROR_STREAM_NAMED(controller_name_, "Cannot get compensate_coriolis from default or left/right robot config");
         return false;
-      }
     }
 
     if (!enable_coriolis){
@@ -118,21 +82,9 @@ namespace franka_ros_controllers {
     }
 
     std::map<std::string, double> torque_limit_map;
-    if (!node_handle.getParam("/robot_config/joint_config/joint_effort_limit", torque_limit_map)) {
-      if (is_left == 1) {
-        if (!node_handle.getParam("/panda_left/robot_config/joint_config/joint_effort_limit", torque_limit_map)) {
-          ROS_ERROR_STREAM_NAMED(controller_name_, "Cannot get left arm joint effort limit");
-          return false;
-        }
-      } else if (is_left == 0) {
-        if (!node_handle.getParam("/panda_right/robot_config/joint_config/joint_effort_limit", torque_limit_map)) {
-          ROS_ERROR_STREAM_NAMED(controller_name_, "Cannot get right arm joint effort limit");
-          return false;
-        }
-      } else {
+    if (!node_handle.getParam("joint_effort_limit", torque_limit_map)) {
         ROS_ERROR_STREAM_NAMED(controller_name_, "Cannot get joint effort limit from default or left/right robot config");
         return false;
-      }
     }
 
     for (size_t i = 0; i < joint_limits_.joint_names.size(); ++i){
@@ -145,7 +97,7 @@ namespace franka_ros_controllers {
     }
 
     double controller_state_publish_rate(30.0);
-    if (!node_handle.getParam("controller_state_publish_rate", controller_state_publish_rate)) {
+    if (!node_handle.getParam("publish_rate", controller_state_publish_rate)) {
       ROS_INFO_STREAM_NAMED(controller_name_, "Did not find controller_state_publish_rate. Using default "
           << controller_state_publish_rate << " [Hz].");
     }

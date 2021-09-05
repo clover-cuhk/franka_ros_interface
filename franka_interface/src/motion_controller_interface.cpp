@@ -29,29 +29,30 @@
 #include <franka_interface/motion_controller_interface.h>
 #include <controller_manager_msgs/SwitchController.h>
 
+#include <utility>
+
 namespace franka_interface {
 
   void MotionControllerInterface::init(ros::NodeHandle& nh,
                                        boost::shared_ptr<controller_manager::ControllerManager> controller_manager) {
     current_mode_ = -1;
 
-    if (!nh.getParam("/controllers_config/position_controller", position_controller_name_)) {
-      ROS_WARN("Position controller's name not get");
+    if (!nh.getParam("controllers_config/position_controller", position_controller_name_)) {
       position_controller_name_ = "position_joint_position_controller";
     }
-    if (!nh.getParam("/controllers_config/torque_controller", torque_controller_name_)) {
+    if (!nh.getParam("controllers_config/torque_controller", torque_controller_name_)) {
       torque_controller_name_ = "effort_joint_torque_controller";
     }
-    if (!nh.getParam("/controllers_config/impedance_controller", impedance_controller_name_)) {
+    if (!nh.getParam("controllers_config/impedance_controller", impedance_controller_name_)) {
       impedance_controller_name_ = "effort_joint_impedance_controller";
     }
-    if (!nh.getParam("/controllers_config/velocity_controller", velocity_controller_name_)) {
+    if (!nh.getParam("controllers_config/velocity_controller", velocity_controller_name_)) {
       velocity_controller_name_ = "velocity_joint_velocity_controller";
     }
-    if (!nh.getParam("/controllers_config/trajectory_controller", trajectory_controller_name_)) {
+    if (!nh.getParam("controllers_config/trajectory_controller", trajectory_controller_name_)) {
       trajectory_controller_name_ = "position_joint_trajectory_controller";
     }
-    if (!nh.getParam("/controllers_config/default_controller", default_controller_name_)) {
+    if (!nh.getParam("controllers_config/default_controller", default_controller_name_)) {
       default_controller_name_ = "position_joint_trajectory_controller";
     }
 
@@ -83,7 +84,7 @@ namespace franka_interface {
       ROS_ERROR_STREAM_NAMED("MotionControllerInterface", "Default controller not present in the provided controllers!");
     }
 
-    controller_manager_ = controller_manager;
+    controller_manager_ = std::move(controller_manager);
     joint_command_sub_ = nh.subscribe("franka_ros_interface/motion_controller/arm/joint_commands", 1,
                                       &MotionControllerInterface::jointCommandCallback, this);
 
@@ -91,7 +92,7 @@ namespace franka_interface {
     joint_command_timeout_sub_ = nh.subscribe("franka_ros_interface/motion_controller/arm/joint_command_timeout", 1,
                                               &MotionControllerInterface::jointCommandTimeoutCallback, this);
     double command_timeout_default;
-    nh.param<double>("/controllers_config/command_timeout", command_timeout_default, 0.2);
+    nh.param<double>("controllers_config/command_timeout", command_timeout_default, 0.2);
     auto p_cmd_timeout_length = std::make_shared<ros::Duration>(std::min(1.0,
                                                                          std::max(0.0, command_timeout_default)));
     box_timeout_length_.set(p_cmd_timeout_length);
