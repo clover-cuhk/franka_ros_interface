@@ -40,7 +40,7 @@ namespace franka_ros_controllers {
                                              ros::NodeHandle& node_handle) {
 
     desired_joints_subscriber_ = node_handle.subscribe(
-        "franka_ros_interface/motion_controller/arm/joint_commands", 20, &PositionJointPositionController::jointPosCmdCallback, this,
+        "arm/joint_commands", 20, &PositionJointPositionController::jointPosCmdCallback, this,
         ros::TransportHints().reliable().tcpNoDelay());
 
     position_joint_interface_ = robot_hardware->get<hardware_interface::PositionJointInterface>();

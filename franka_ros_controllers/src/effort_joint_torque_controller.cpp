@@ -131,7 +131,7 @@ namespace franka_ros_controllers {
       }
     }
     desired_joints_subscriber_ = node_handle.subscribe(
-        "franka_ros_interface/motion_controller/arm/joint_commands", 20, &EffortJointTorqueController::jointCmdCallback, this,
+        "arm/joint_commands", 20, &EffortJointTorqueController::jointCmdCallback, this,
         ros::TransportHints().reliable().tcpNoDelay());
     publisher_controller_states_.init(node_handle, "franka_ros_interface/motion_controller/arm/joint_controller_states", 1);
 
