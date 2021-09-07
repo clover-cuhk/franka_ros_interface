@@ -1,16 +1,16 @@
 <?xml version="1.0" ?>
 <launch>
   <rosparam command="load" file="$(find franka_ros_controllers)/config/ros_controllers.yaml" ns="/franka_ros_interface"/>
-  <arg name="load_gripper" default="true" />
+  <arg name="load_gripper" default="false" />
   <arg name="rate" default="1000" />
   <arg name="start_controllers" default="true" />
   <arg name="start_moveit" default="true" />
   <arg name="fake_execution" default="false" /> <!-- Only valid if running moveit movegroup (start_moveit:=true) -->
-  <arg name="load_demo_planning_scene" default="true"/>
+  <arg name="load_demo_planning_scene" default="false"/>
 
   <!-- Panda Control Interface -->
-  <param name="robot_description" command="$(find xacro)/xacro --inorder '$(find franka_panda_description)/robots/panda_arm_hand.urdf.xacro'" if="$(arg load_gripper)" />
-  <param name="robot_description" command="$(find xacro)/xacro --inorder '$(find franka_panda_description)/robots/panda_arm.urdf.xacro'" unless="$(arg load_gripper)" />
+  <param name="robot_description" command="$(find xacro)/xacro '$(find franka_panda_description)/robots/panda_arm_hand.urdf.xacro'" if="$(arg load_gripper)" />
+  <param name="robot_description" command="$(find xacro)/xacro '$(find franka_panda_description)/robots/panda_arm.urdf.xacro'" unless="$(arg load_gripper)" />
 
   <include file="$(find franka_gripper)/launch/franka_gripper.launch" if="$(arg load_gripper)">
     <arg name="robot_ip" value="$(env FRANKA_ROBOT_IP)" />
